@@ -30,7 +30,6 @@ namespace Csom.Library.Sample
             // using PnP
             var listPnPByUrl = context.Web.GetListByUrl("PnPByUrl");
             Console.WriteLine(listPnPByUrl.Title);
-
         }
 
         /// <summary>

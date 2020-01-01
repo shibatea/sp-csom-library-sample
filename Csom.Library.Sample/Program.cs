@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 
 namespace Csom.Library.Sample
 {
@@ -6,9 +7,9 @@ namespace Csom.Library.Sample
     {
         static void Main(string[] args)
         {
-            const string account = "<account>";
-            const string password = "<password>";
-            const string webUrl = "<web url>";
+            var account = ConfigurationManager.AppSettings["account"];
+            var password = ConfigurationManager.AppSettings["password"];
+            var webUrl = ConfigurationManager.AppSettings["url"];
 
             var spService = new SPService(account, password, webUrl);
 
