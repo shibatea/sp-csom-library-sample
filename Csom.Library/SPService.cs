@@ -9,7 +9,7 @@ namespace Csom.Library
         public string Account { get; }
         public string Password { get; }
         public string WebUrl { get; }
-        public ClientContext Context { get; set; }
+        public ClientContext Context { get; }
         private SecureString SecureString { get; } = new SecureString();
 
         public SPService(string account, string password, string webUrl)
