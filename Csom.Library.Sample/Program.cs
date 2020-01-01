@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Csom.Library.Sample
 {
@@ -10,6 +6,21 @@ namespace Csom.Library.Sample
     {
         static void Main(string[] args)
         {
+            const string account = "<account>";
+            const string password = "<password>";
+            const string webUrl = "<web url>";
+
+            var spService = new SPService(account, password, webUrl);
+
+            using (spService)
+            {
+                var context = spService.Context;
+
+                ListSample.ReadList(context);
+                ListSample.ReadListWithExpressions(context);
+            }
+
+            Console.ReadLine();
         }
     }
 }
