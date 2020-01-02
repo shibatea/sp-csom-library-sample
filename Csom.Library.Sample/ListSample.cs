@@ -5,6 +5,11 @@ namespace Csom.Library.Sample
 {
     internal static class ListSample
     {
+        /// <summary>
+        /// SharePoint リストを取得するサンプルです。
+        /// CSOM メソッド版と PnP 拡張メソッド版を用意しました。
+        /// </summary>
+        /// <param name="context"></param>
         public static void ReadList(ClientContext context)
         {
             // using CSOM
