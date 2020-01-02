@@ -3,9 +3,9 @@ using System.Configuration;
 
 namespace Csom.Library.Sample
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             var account = ConfigurationManager.AppSettings["account"];
             var password = ConfigurationManager.AppSettings["password"];
@@ -17,6 +17,10 @@ namespace Csom.Library.Sample
             {
                 var context = spService.Context;
 
+                var web = context.Web;
+
+                SecurableObjectSample.GetRolesForSecurableObject(web);
+                WebSample.GetWebRoleDefinitions(web);
                 ListSample.ReadList(context);
                 ListSample.ReadListWithExpressions(context);
             }
