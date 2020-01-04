@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.SharePoint.Client;
+using Microsoft.SharePoint.Client.Utilities;
 
 namespace Csom.Library.Sample
 {
@@ -35,5 +36,70 @@ namespace Csom.Library.Sample
                 }
             }
         }
+
+        public static void BulkDeleteRolesByPnP(SecurableObject securableObject)
+        {
+            securableObject.EnsureProperties(s => s.HasUniqueRoleAssignments);
+
+            // 固有の権限かどうか確認する
+            if (!securableObject.HasUniqueRoleAssignments)
+            {
+                // 権限の継承を中止する
+                // ※ 後続の EnsureProperties 内で ExecuteQuery が実行されているので
+                // ※ IF 文内では実行しない
+                securableObject.BreakRoleInheritance(false, false);
+            }
+
+            for (var index = securableObject.RoleAssignments.Count - 1; index >= 0; index--)
+            {
+                var roleAssignment = securableObject.RoleAssignments[index];
+                securableObject.RemovePermissionLevelFromPrincipal(roleAssignment.Member, RoleType.Reader, true);
+            }
+        }
+
+        public static void BulkDeleteRolesByCsom1(SecurableObject securableObject)
+        {
+            securableObject.EnsureProperties(s => s.HasUniqueRoleAssignments);
+
+            if (!securableObject.HasUniqueRoleAssignments)
+            {
+                securableObject.BreakRoleInheritance(false, false);
+            }
+
+            securableObject.EnsureProperties(
+                s => s.RoleAssignments.Include(
+                    r => r.Member.PrincipalType,
+                    r => r.Member.LoginName));
+
+            for (var index = securableObject.RoleAssignments.Count - 1; index >= 0; index--)
+            {
+                var roleAssignment = securableObject.RoleAssignments[index];
+                roleAssignment.DeleteObject();
+            }
+
+            securableObject.Context.ExecuteQueryRetry();
+        }
+
+        public static void BulkDeleteRolesByCsom2(SecurableObject securableObject)
+        {
+            securableObject.EnsureProperties(s => s.HasUniqueRoleAssignments);
+
+            if (securableObject.HasUniqueRoleAssignments)
+            {
+                securableObject.ResetRoleInheritance();
+                securableObject.BreakRoleInheritance(false, false);
+            }
+            else
+            {
+                securableObject.BreakRoleInheritance(false, false);
+            }
+
+            securableObject.EnsureProperties(
+                s => s.RoleAssignments.Include(
+                    r => r.Member.PrincipalType,
+                    r => r.Member.LoginName));
+
+        }
+
     }
 }
