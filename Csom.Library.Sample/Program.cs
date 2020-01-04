@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.Diagnostics;
 using Microsoft.SharePoint.Client;
 
 namespace Csom.Library.Sample
@@ -25,10 +26,8 @@ namespace Csom.Library.Sample
                 context.ExecuteQueryRetry();
 
                 SecurableObjectSample.BulkDeleteRolesByPnP(listCsomById);
-                //SecurableObjectSample.BulkDeleteRolesByCsom1(listCsomById);
-                //SecurableObjectSample.BulkDeleteRolesByCsom2(listCsomById);
-                return;
-
+                SecurableObjectSample.BulkDeleteRolesByCsom1(listCsomById);
+                SecurableObjectSample.BulkDeleteRolesByCsom2(listCsomById);
                 SecurableObjectSample.GetRolesForSecurableObject(web);
                 WebSample.GetWebRoleDefinitions(web);
                 ListSample.ReadList(context);

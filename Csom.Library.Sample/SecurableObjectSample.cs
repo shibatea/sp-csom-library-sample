@@ -37,6 +37,10 @@ namespace Csom.Library.Sample
             }
         }
 
+        /// <summary>
+        /// コードの量は少なく済むが、権限を１件削除するのに時間を要する
+        /// </summary>
+        /// <param name="securableObject"></param>
         public static void BulkDeleteRolesByPnP(SecurableObject securableObject)
         {
             securableObject.EnsureProperties(s => s.HasUniqueRoleAssignments);
@@ -45,10 +49,11 @@ namespace Csom.Library.Sample
             if (!securableObject.HasUniqueRoleAssignments)
             {
                 // 権限の継承を中止する
-                // ※ 後続の EnsureProperties 内で ExecuteQuery が実行されているので
-                // ※ IF 文内では実行しない
+                // ※ 後続の EnsureProperties 内で ExecuteQuery が実行されているので IF 文内では実行しない
                 securableObject.BreakRoleInheritance(false, false);
             }
+
+            securableObject.EnsureProperties(s => s.RoleAssignments);
 
             for (var index = securableObject.RoleAssignments.Count - 1; index >= 0; index--)
             {
@@ -57,19 +62,23 @@ namespace Csom.Library.Sample
             }
         }
 
+        /// <summary>
+        /// PnP バージョンと比べたら高速だが、ユーザー数が多い場合には時間が掛かる場合がある
+        /// </summary>
+        /// <param name="securableObject"></param>
         public static void BulkDeleteRolesByCsom1(SecurableObject securableObject)
         {
             securableObject.EnsureProperties(s => s.HasUniqueRoleAssignments);
 
+            // 固有の権限かどうか確認する
             if (!securableObject.HasUniqueRoleAssignments)
             {
+                // 権限の継承を中止する
+                // ※ 後続の EnsureProperties 内で ExecuteQuery が実行されているので IF 文内では実行しない
                 securableObject.BreakRoleInheritance(false, false);
             }
 
-            securableObject.EnsureProperties(
-                s => s.RoleAssignments.Include(
-                    r => r.Member.PrincipalType,
-                    r => r.Member.LoginName));
+            securableObject.EnsureProperties(s => s.RoleAssignments);
 
             for (var index = securableObject.RoleAssignments.Count - 1; index >= 0; index--)
             {
@@ -80,12 +89,20 @@ namespace Csom.Library.Sample
             securableObject.Context.ExecuteQueryRetry();
         }
 
+        /// <summary>
+        /// ユーザー数が多かろうが少なかろうが、安定した速度で削除できる
+        /// また、固有の権限を削除 ⇒ 権限の継承を外す 処理は、（権限を繰り返し削除するのと比べて）コストの掛かる処理ではない
+        /// </summary>
+        /// <param name="securableObject"></param>
         public static void BulkDeleteRolesByCsom2(SecurableObject securableObject)
         {
             securableObject.EnsureProperties(s => s.HasUniqueRoleAssignments);
 
             if (securableObject.HasUniqueRoleAssignments)
             {
+                // 一旦、固有の権限を削除してから、権限の継承を外す
+                // その際に、実行ユーザー以外の権限をすべてクリアする
+                // ※ BreakRoleInheritance メソッドの copyRoleAssignments を false にする
                 securableObject.ResetRoleInheritance();
                 securableObject.BreakRoleInheritance(false, false);
             }
@@ -94,11 +111,16 @@ namespace Csom.Library.Sample
                 securableObject.BreakRoleInheritance(false, false);
             }
 
-            securableObject.EnsureProperties(
-                s => s.RoleAssignments.Include(
-                    r => r.Member.PrincipalType,
-                    r => r.Member.LoginName));
+            securableObject.EnsureProperties(s => s.RoleAssignments);
 
+            // 実行ユーザーしか残ってないので、for 文は実質 1 回しか繰り返すことがない
+            for (var index = securableObject.RoleAssignments.Count - 1; index >= 0; index--)
+            {
+                var roleAssignment = securableObject.RoleAssignments[index];
+                roleAssignment.DeleteObject();
+            }
+
+            securableObject.Context.ExecuteQueryRetry();
         }
 
     }
